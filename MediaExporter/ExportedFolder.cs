@@ -1,0 +1,105 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MediaExporter
+{
+    /// <summary>
+    /// Represents a folder that can be exported and also contain files that can be exported.
+    /// </summary>
+    public class ExportedFolder : IComparable, IComparable<ExportedFolder>
+    {        
+        /// <summary>
+        /// The path to this folder.
+        /// </summary>
+        private readonly string _path;
+
+        /// <summary>
+        /// The folders that lie within this folder.
+        /// </summary>
+        private readonly SortedSet<ExportedFolder> _subFolders;
+
+        /// <summary>
+        /// The files that lie within this folder.
+        /// </summary>
+        private readonly SortedSet<ExportedFile> _files;
+
+        /// <summary>
+        /// Constructs a new instance of the ExportedFolder class.
+        /// </summary>
+        /// <param name="folderPath">The path to the folder.</param>
+        public ExportedFolder(string folderPath)
+        {
+            this._path = folderPath;
+            this._subFolders = new SortedSet<ExportedFolder>();
+            this._files = new SortedSet<ExportedFile>();
+        }
+
+        /// <summary>
+        /// Gets the folder's path.
+        /// </summary>
+        public string Path
+        {
+            get
+            {
+                return this._path;
+            }
+        }
+
+        /// <summary>
+        /// Gets the collection of subfolders directly in this folder.
+        /// </summary>
+        public ICollection<ExportedFolder> SubFolders
+        {
+            get
+            {
+                return this._subFolders;
+            }
+        }
+
+        /// <summary>
+        /// Gets the collection of files directly in this folder.
+        /// </summary>
+        public ICollection<ExportedFile> Files
+        {
+            get
+            {
+                return this._files;
+            }
+        }
+
+        public int CompareTo(object obj)
+        {
+            ExportedFolder folder = obj as ExportedFolder;
+            if (folder == null)
+            {
+                throw new ArgumentException("Object not valid reference of ExportedFolder object.");
+            }
+
+            return this._path.CompareTo(folder._path);
+        }
+
+        public int CompareTo(ExportedFolder other)
+        {
+            return this._path.CompareTo(other._path);
+        }
+
+        public override bool Equals(object obj)
+        {
+            ExportedFolder folder = obj as ExportedFolder;
+            if (folder == null)
+            {
+                return false;
+            }
+
+            return this._path.Equals(folder._path);
+        }
+
+        public override int GetHashCode()
+        {
+            return this._path.GetHashCode();
+        }
+    }
+}
