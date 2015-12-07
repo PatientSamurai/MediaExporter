@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -18,6 +19,11 @@ namespace MediaExporter
     public partial class MainForm : Form
     {
         /// <summary>
+        /// The cancellation token for the current running export if one is occurring.
+        /// </summary>
+        private CancellationTokenSource _exportCancelTokenSource;
+
+        /// <summary>
         /// Constructs a new instance of MainForm class.
         /// </summary>
         public MainForm()
@@ -25,6 +31,20 @@ namespace MediaExporter
             this.InitializeComponent();
             this.openFileDialogSourcePath.FileOk += openFileDialogSourcePath_FileOk;
             this.openFileDialogDestinationPath.FileOk += openFileDialogDestinationPath_FileOk;
+        }
+
+        /// <summary>
+        /// Updates the enabled value of all the form's input elements to match the given parameter and sets the abort button to the opposite.
+        /// </summary>
+        /// <pparam name="shouldInputBeEnabled">Whether or not input should be enabled.</pparam>
+        private void UpdateInputFormsEnabledness(bool shouldInputBeEnabled)
+        {
+            this.textBoxSourcePath.Enabled = shouldInputBeEnabled;
+            this.textBoxDestinationPath.Enabled = shouldInputBeEnabled;
+            this.buttonOpenSourcePath.Enabled = shouldInputBeEnabled;
+            this.buttonOpenDestinationPath.Enabled = shouldInputBeEnabled;
+            this.buttonExport.Enabled = shouldInputBeEnabled;
+            this.buttonAbort.Enabled = !shouldInputBeEnabled;
         }
 
         /// <summary>
@@ -67,17 +87,38 @@ namespace MediaExporter
             this.textBoxOutput.Text = string.Empty;
 
             var exporter = new Exporter(this.textBoxSourcePath.Text, this.textBoxDestinationPath.Text);
+            this._exportCancelTokenSource = new CancellationTokenSource();
+
+            this.UpdateInputFormsEnabledness(false);
 
             try
             {
-                await exporter.Export(new Progress<string>(this.GetExportProgress));
+                await exporter.Export(new Progress<string>(this.GetExportProgress), this._exportCancelTokenSource.Token);
             }
             catch (InvalidOperationException ex)
             {
                 this.OutputLine(ex.Message);
             }
+            catch (OperationCanceledException)
+            {
+                this.OutputLine("Operation has been cancelled.");
+            }
 
+            this._exportCancelTokenSource = null;
+
+            this.UpdateInputFormsEnabledness(true);
             this.OutputLine("Done.");
+        }
+
+        /// <summary>
+        /// Called when "abourt" is clicked.
+        /// </summary>
+        private void buttonAbort_Click(object sender, EventArgs e)
+        {
+            if (this._exportCancelTokenSource != null)
+            {
+                this._exportCancelTokenSource.Cancel();
+            }
         }
 
         /// <summary>

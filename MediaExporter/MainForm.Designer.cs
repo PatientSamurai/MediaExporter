@@ -38,6 +38,7 @@
             this.openFileDialogDestinationPath = new System.Windows.Forms.OpenFileDialog();
             this.buttonExport = new System.Windows.Forms.Button();
             this.textBoxOutput = new System.Windows.Forms.TextBox();
+            this.buttonAbort = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // labelSourcePath
@@ -106,7 +107,7 @@
             // 
             // buttonExport
             // 
-            this.buttonExport.Location = new System.Drawing.Point(459, 40);
+            this.buttonExport.Location = new System.Drawing.Point(459, 11);
             this.buttonExport.Name = "buttonExport";
             this.buttonExport.Size = new System.Drawing.Size(75, 23);
             this.buttonExport.TabIndex = 6;
@@ -124,11 +125,23 @@
             this.textBoxOutput.Size = new System.Drawing.Size(519, 286);
             this.textBoxOutput.TabIndex = 7;
             // 
+            // buttonAbort
+            // 
+            this.buttonAbort.Enabled = false;
+            this.buttonAbort.Location = new System.Drawing.Point(459, 40);
+            this.buttonAbort.Name = "buttonAbort";
+            this.buttonAbort.Size = new System.Drawing.Size(75, 23);
+            this.buttonAbort.TabIndex = 8;
+            this.buttonAbort.Text = "Abort";
+            this.buttonAbort.UseVisualStyleBackColor = true;
+            this.buttonAbort.Click += new System.EventHandler(this.buttonAbort_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(543, 367);
+            this.Controls.Add(this.buttonAbort);
             this.Controls.Add(this.textBoxOutput);
             this.Controls.Add(this.buttonExport);
             this.Controls.Add(this.buttonOpenDestinationPath);
@@ -156,6 +169,7 @@
         private System.Windows.Forms.OpenFileDialog openFileDialogDestinationPath;
         private System.Windows.Forms.Button buttonExport;
         private System.Windows.Forms.TextBox textBoxOutput;
+        private System.Windows.Forms.Button buttonAbort;
     }
 }
 

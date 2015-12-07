@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaExporter
@@ -29,6 +30,11 @@ namespace MediaExporter
         private IProgress<string> _progress;
 
         /// <summary>
+        /// Token to indicate a cancel was requested.
+        /// </summary>
+        private CancellationToken _cancelToken;
+
+        /// <summary>
         /// Creates a new instance of the Exporter class.
         /// </summary>
         /// <param name="source">Where to copy files from.</param>
@@ -43,9 +49,11 @@ namespace MediaExporter
         /// Performs the export operation.
         /// </summary>
         /// <param name="progress">The progress method to report back status to.</param>
-        public async Task Export(IProgress<string> progress)
+        /// <param name="cancelToken">Cancellation token for the task.</param>
+        public async Task Export(IProgress<string> progress, CancellationToken cancelToken)
         {
             this._progress = progress;
+            this._cancelToken = cancelToken;
 
             await Task.Run(new Action(this.ExportSync));
         }
@@ -92,6 +100,8 @@ namespace MediaExporter
                     this._progress.Report("Deleting file: " + destinationFile.Path);
                     File.Delete(destinationFile.Path);
                 }
+
+                this._cancelToken.ThrowIfCancellationRequested();
             }
 
             // Delete folders from the destination that should not be there
@@ -102,6 +112,8 @@ namespace MediaExporter
                     this._progress.Report("Deleting folder: " + destinationFolder.Path);
                     Directory.Delete(destinationFolder.Path, true);
                 }
+
+                this._cancelToken.ThrowIfCancellationRequested();
             }
 
             // Copy over files that need to be copied over
@@ -112,6 +124,8 @@ namespace MediaExporter
                     this._progress.Report("Copying file: " + sourceFile.Path);
                     File.Copy(sourceFile.Path, Path.Combine(destination.Path, Path.GetFileName(sourceFile.Path)));
                 }
+
+                this._cancelToken.ThrowIfCancellationRequested();
             }
 
             // Copy sub folders that need to be copied
@@ -131,6 +145,8 @@ namespace MediaExporter
 
                 // Recurse!!
                 this.ExportCopy(sourceFolder, destinationFolder);
+
+                this._cancelToken.ThrowIfCancellationRequested();
             }
         }
 
@@ -146,6 +162,7 @@ namespace MediaExporter
                 var exportedFolder = new ExportedFolder(subFolder, basePath);
                 this.PopulateExportedFolder(exportedFolder, basePath);
                 folder.SubFolders.Add(exportedFolder);
+                this._cancelToken.ThrowIfCancellationRequested();
             }
 
             foreach (string file in Directory.GetFiles(folder.Path))
@@ -153,6 +170,7 @@ namespace MediaExporter
                 Debug.WriteLine("Found file: " + file);
                 var exportedFile = new ExportedFile(file, basePath);
                 folder.Files.Add(exportedFile);
+                this._cancelToken.ThrowIfCancellationRequested();
             }
         }
     }
