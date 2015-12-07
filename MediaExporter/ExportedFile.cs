@@ -17,12 +17,23 @@ namespace MediaExporter
         private readonly string _path;
 
         /// <summary>
+        /// The partial path to the file.
+        /// </summary>
+        private readonly string _partialPath;
+
+        /// <summary>
         /// Constructs a new instance of the ExportedFile class.
         /// </summary>
         /// <param name="filePath">The path to the file.</param>
-        public ExportedFile(string filePath)
+        /// <param name="basePath">The base of the export operation this folder is associated with.</param>
+        public ExportedFile(string filePath, string basePath)
         {
             this._path = filePath;
+            this._partialPath = filePath.Substring(basePath.Length);
+            if (this._partialPath.StartsWith(System.IO.Path.DirectorySeparatorChar.ToString()))
+            {
+                this._partialPath = this._partialPath.Substring(1);
+            }
         }
 
         /// <summary>
@@ -45,12 +56,12 @@ namespace MediaExporter
                 throw new ArgumentException("Object not valid reference of ExportedFile object.");
             }
 
-            return this._path.CompareTo(file._path);
+            return this._partialPath.CompareTo(file._partialPath);
         }
 
         public int CompareTo(ExportedFile other)
         {
-            return this._path.CompareTo(other._path);
+            return this._partialPath.CompareTo(other._partialPath);
         }
 
         public override bool Equals(object obj)
@@ -61,12 +72,12 @@ namespace MediaExporter
                 return false;
             }
 
-            return this._path.Equals(file._path);
+            return this._partialPath.Equals(file._partialPath);
         }
 
         public override int GetHashCode()
         {
-            return this._path.GetHashCode();
+            return this._partialPath.GetHashCode();
         }
     }
 }

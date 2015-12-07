@@ -17,6 +17,11 @@ namespace MediaExporter
         private readonly string _path;
 
         /// <summary>
+        /// The partial path to the folder.
+        /// </summary>
+        private readonly string _partialPath;
+
+        /// <summary>
         /// The folders that lie within this folder.
         /// </summary>
         private readonly SortedSet<ExportedFolder> _subFolders;
@@ -30,9 +35,16 @@ namespace MediaExporter
         /// Constructs a new instance of the ExportedFolder class.
         /// </summary>
         /// <param name="folderPath">The path to the folder.</param>
-        public ExportedFolder(string folderPath)
+        /// <param name="basePath">The base of the export operation this folder is associated with.</param>
+        public ExportedFolder(string folderPath, string basePath)
         {
             this._path = folderPath;
+            this._partialPath = folderPath.Substring(basePath.Length);
+            if (this._partialPath.StartsWith(System.IO.Path.DirectorySeparatorChar.ToString()))
+            {
+                this._partialPath = this._partialPath.Substring(1);
+            }
+
             this._subFolders = new SortedSet<ExportedFolder>();
             this._files = new SortedSet<ExportedFile>();
         }
@@ -78,12 +90,12 @@ namespace MediaExporter
                 throw new ArgumentException("Object not valid reference of ExportedFolder object.");
             }
 
-            return this._path.CompareTo(folder._path);
+            return this._partialPath.CompareTo(folder._partialPath);
         }
 
         public int CompareTo(ExportedFolder other)
         {
-            return this._path.CompareTo(other._path);
+            return this._partialPath.CompareTo(other._partialPath);
         }
 
         public override bool Equals(object obj)
@@ -94,12 +106,12 @@ namespace MediaExporter
                 return false;
             }
 
-            return this._path.Equals(folder._path);
+            return this._partialPath.Equals(folder._partialPath);
         }
 
         public override int GetHashCode()
         {
-            return this._path.GetHashCode();
+            return this._partialPath.GetHashCode();
         }
     }
 }

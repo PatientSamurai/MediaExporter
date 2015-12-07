@@ -67,12 +67,12 @@ namespace MediaExporter
             }
 
             _progress.Report("Populating source.");
-            var sourceFolder = new ExportedFolder(_sourceDirectory);
-            this.PopulateExportedFolder(sourceFolder);
+            var sourceFolder = new ExportedFolder(_sourceDirectory, this._sourceDirectory);
+            this.PopulateExportedFolder(sourceFolder, this._sourceDirectory);
 
             _progress.Report("Populating destination.");
-            var destinationFolder = new ExportedFolder(_destinationDirectory);
-            this.PopulateExportedFolder(destinationFolder);
+            var destinationFolder = new ExportedFolder(_destinationDirectory, this._destinationDirectory);
+            this.PopulateExportedFolder(destinationFolder, this._destinationDirectory);
 
             this.ExportCopy(sourceFolder, destinationFolder);
         }
@@ -89,6 +89,7 @@ namespace MediaExporter
             {
                 if (!source.Files.Contains(destinationFile))
                 {
+                    this._progress.Report("Deleting file: " + destinationFile.Path);
                     File.Delete(destinationFile.Path);
                 }
             }
@@ -98,6 +99,7 @@ namespace MediaExporter
             {
                 if (!source.SubFolders.Contains(destinationFolder))
                 {
+                    this._progress.Report("Deleting folder: " + destinationFolder.Path);
                     Directory.Delete(destinationFolder.Path, true);
                 }
             }
@@ -107,6 +109,7 @@ namespace MediaExporter
             {
                 if (!destination.Files.Contains(sourceFile))
                 {
+                    this._progress.Report("Copying file: " + sourceFile.Path);
                     File.Copy(sourceFile.Path, Path.Combine(destination.Path, Path.GetFileName(sourceFile.Path)));
                 }
             }
@@ -123,7 +126,7 @@ namespace MediaExporter
                 {
                     string folderToCreate = Path.Combine(destination.Path, sourceFolder.Path.Split(Path.DirectorySeparatorChar).Last());
                     Directory.CreateDirectory(folderToCreate);
-                    destinationFolder = new ExportedFolder(folderToCreate);
+                    destinationFolder = new ExportedFolder(folderToCreate, this._destinationDirectory);
                 }
 
                 // Recurse!!
@@ -135,20 +138,20 @@ namespace MediaExporter
         /// Takes an empty exportable folder and populates it with its files and sub folders.
         /// </summary>
         /// <param name="folder">The folder to populate.</param>
-        private void PopulateExportedFolder(ExportedFolder folder)
+        private void PopulateExportedFolder(ExportedFolder folder, string basePath)
         {
             foreach (string subFolder in Directory.GetDirectories(folder.Path))
             {
                 Debug.WriteLine("Found subfolder: " + subFolder);
-                var exportedFolder = new ExportedFolder(subFolder);
-                this.PopulateExportedFolder(exportedFolder);
+                var exportedFolder = new ExportedFolder(subFolder, basePath);
+                this.PopulateExportedFolder(exportedFolder, basePath);
                 folder.SubFolders.Add(exportedFolder);
             }
 
             foreach (string file in Directory.GetFiles(folder.Path))
             {
                 Debug.WriteLine("Found file: " + file);
-                var exportedFile = new ExportedFile(file);
+                var exportedFile = new ExportedFile(file, basePath);
                 folder.Files.Add(exportedFile);
             }
         }

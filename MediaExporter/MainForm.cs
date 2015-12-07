@@ -98,10 +98,10 @@ namespace MediaExporter
             Debug.WriteLine(line);
             if (this.textBoxOutput.Text.Length != 0)
             {
-                this.textBoxOutput.Text += "\r\n";
+                this.textBoxOutput.AppendText("\r\n");
             }
-            
-            this.textBoxOutput.Text += line;
+
+            this.textBoxOutput.AppendText(line);
         }
     }
 }
