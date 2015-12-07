@@ -62,61 +62,31 @@ namespace MediaExporter
         /// <summary>
         /// Called when the "export" button is clicked.
         /// </summary>
-        private void buttonExport_Click(object sender, EventArgs e)
+        private async void buttonExport_Click(object sender, EventArgs e)
         {
             this.textBoxOutput.Text = string.Empty;
 
-            this.Export();
+            var exporter = new Exporter(this.textBoxSourcePath.Text, this.textBoxDestinationPath.Text);
+
+            try
+            {
+                await exporter.Export(new Progress<string>(this.GetExportProgress));
+            }
+            catch (InvalidOperationException ex)
+            {
+                this.OutputLine(ex.Message);
+            }
 
             this.OutputLine("Done.");
         }
 
         /// <summary>
-        /// Performs the export process.
+        /// Progress method for adding a message to the status window.
         /// </summary>
-        private void Export()
+        /// <param name="status">Line to add.</param>
+        private void GetExportProgress(string status)
         {
-            string sourcePath = this.textBoxSourcePath.Text;
-            string destinationPath = this.textBoxDestinationPath.Text;
-            if (!Directory.Exists(sourcePath))
-            {
-                this.OutputLine("Source directory does not exist.");
-                return;
-            }
-
-            if (!Directory.Exists(destinationPath))
-            {
-                this.OutputLine("Destination directory does not exist.");
-                return;
-            }
-
-            var sourceFolder = new ExportedFolder(sourcePath);
-            this.PopulateExportedFolder(sourceFolder);
-
-            var destinationFolder = new ExportedFolder(destinationPath);
-            this.PopulateExportedFolder(destinationFolder);
-        }
-
-        /// <summary>
-        /// Takes an empty exportable folder and populates it with its files and sub folders.
-        /// </summary>
-        /// <param name="folder">The folder to populate.</param>
-        private void PopulateExportedFolder(ExportedFolder folder)
-        {
-            foreach (string subFolder in Directory.GetDirectories(folder.Path))
-            {
-                Debug.WriteLine("Found subfolder: " + subFolder);
-                var exportedFolder = new ExportedFolder(subFolder);
-                this.PopulateExportedFolder(exportedFolder);
-                folder.SubFolders.Add(exportedFolder);
-            }
-
-            foreach (string file in Directory.GetFiles(folder.Path))
-            {
-                Debug.WriteLine("Found file: " + file);
-                var exportedFile = new ExportedFile(file);
-                folder.Files.Add(exportedFile);
-            }
+            this.OutputLine(status);
         }
 
         /// <summary>
@@ -128,9 +98,9 @@ namespace MediaExporter
             Debug.WriteLine(line);
             if (this.textBoxOutput.Text.Length != 0)
             {
-                this.textBoxOutput.Text += "\n";
+                this.textBoxOutput.Text += "\r\n";
             }
-
+            
             this.textBoxOutput.Text += line;
         }
     }

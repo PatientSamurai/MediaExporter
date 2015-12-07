@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="ExportedFile.cs" />
     <Compile Include="ExportedFolder.cs" />
+    <Compile Include="Exporter.cs" />
     <Compile Include="IEquatable.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>

@@ -38,6 +38,7 @@ namespace MediaExporter
 
         public int CompareTo(object obj)
         {
+            // TODO: Comparison must include file contents
             ExportedFile file = obj as ExportedFile;
             if (file == null)
             {
